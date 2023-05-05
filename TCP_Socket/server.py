@@ -1,6 +1,7 @@
 import socket
 
 MAX_BUFFER_SIZE = 1024
+MAX_CONNECTION = 5
 
 
 def server_socket_tcp(_server_ip: str, _server_port: int) -> None:
@@ -15,9 +16,10 @@ def server_socket_tcp(_server_ip: str, _server_port: int) -> None:
     _server_connection_socket.bind(_server_addr)
 
     # Listen
-    MAX_CONNECTION = 5
     _server_connection_socket.listen(MAX_CONNECTION)
+    
     print(f"Listing at:{_server_addr}")
+    
     while True:
         try:
             print("=====================================")
