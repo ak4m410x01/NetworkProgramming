@@ -4,7 +4,7 @@ MAX_BUFFER_SIZE = 1024
 SERVER_ADDR = ("127.0.0.1", 55555)
 
 
-def server_socket_tcp(server_addr: tuple) -> None:
+def server_socket_udp(server_addr: tuple) -> None:
     # Create Socket Connection
     server_connection_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -35,4 +35,4 @@ def server_socket_tcp(server_addr: tuple) -> None:
 
 
 # Call Socket Method
-# server_socket_tcp(SERVER_ADDR)
+# server_socket_udp(SERVER_ADDR)
