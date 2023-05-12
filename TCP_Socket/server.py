@@ -1,52 +1,51 @@
-import socket
+from socket import *
 
 MAX_BUFFER_SIZE = 1024
-MAX_SERVER_CONNECTION = 5
 SERVER_ADDR = ("127.0.0.1", 55555)
+SERVER_MAX_CONNECTION = 5
 
+# Create Socket Connection
+server_socket_connection = socket(AF_INET, SOCK_STREAM)
 
-def server_socket_tcp(server_addr: tuple) -> None:
-    # Create Socket Connection
-    server_connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# Set Sock REUSEADDR option = 1
+server_socket_connection.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
-    # Set Socket Option REUSEADDR = 1
-    server_connection_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# Bind Socket with Server addr
+server_socket_connection.bind(SERVER_ADDR)
 
-    # Bind Socket with server addr
-    server_connection_socket.bind(server_addr)
+# Listing...
+server_socket_connection.listen(SERVER_MAX_CONNECTION)
 
-    # Listen...
-    server_connection_socket.listen(MAX_SERVER_CONNECTION)
+print(f"Listing at: `{SERVER_ADDR}`")
 
-    print(f"Listing at:{server_addr}... :)")
+while True:
+    try:
+        print("=====================================")
+        print("Waiting Client(s)...!!\n")
 
-    while True:
-        try:
-            print("=====================================")
-            print("Waiting Client(s)...!!\n")
+        # Accept Socket Connection
+        client_socket_connection, client_addr = server_socket_connection.accept()
 
-            # Accept Connection
-            client_connection, _client_addr = server_connection_socket.accept()
+        # Recv Data From Client...
+        client_msg = client_socket_connection.recv(MAX_BUFFER_SIZE)
 
-            # Recv Data
-            client_msg = client_connection.recv(MAX_BUFFER_SIZE)
-            print(f"{_client_addr} => {client_msg.decode('ASCII')}")
+        print(f"Received From `{client_addr}: Message => {client_msg.decode()}`")
 
-            # Send Data
-            server_msg = "Hi, Client :)".encode("ASCII")
-            client_connection.sendall(server_msg)
+        # Send Data To Client...
+        server_msg = "Hi, Client".encode()
+        client_socket_connection.sendall(server_msg)
 
-            print(f"{server_addr} => {server_msg.decode('ASCII')}")
+        print(f"Send To `{client_addr}: Message => {server_msg.decode()}`")
 
-            # Close Connection
-            client_connection.close()
+        # Close Connection
+        client_socket_connection.close()
 
-        except KeyboardInterrupt:
-            print("***************************")
-            print("   Connection Closed :(    ")
-            print("***************************")
-            break
+    except KeyboardInterrupt:
+        print("***************************")
+        print("   Connection Closed :(    ")
+        print("***************************")
 
+        break
 
-# Call Socket Method
-# server_socket_tcp(SERVER_ADDR)
+    except error:
+        print(error)
