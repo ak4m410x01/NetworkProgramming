@@ -1,6 +1,6 @@
 from socket import *
 
-SERVER_ADDR = ('127.0.0.1', 55555)
+SERVER_ADDR = ("127.0.0.1", 55555)
 MAX_BUFFER_SIZE = 1024
 
 # Create Socket Connection
