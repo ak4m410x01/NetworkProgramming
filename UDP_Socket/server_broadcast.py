@@ -1,6 +1,6 @@
 from socket import *
 
-SERVER_ADDR = ("<broadcast>", 55555)
+SERVER_ADDR = ("0.0.0.0", 55555)
 MAX_BUFFER_SIZE = 1024
 
 # Create Socket Connection
@@ -8,6 +8,10 @@ server_socket_connection = socket(AF_INET, SOCK_DGRAM)
 
 # Bind Socket with server address
 server_socket_connection.bind(SERVER_ADDR)
+
+# Set Sock option BROADCAST = 1
+server_socket_connection.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+
 
 while True:
     try:
