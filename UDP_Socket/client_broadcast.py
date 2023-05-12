@@ -6,6 +6,9 @@ MAX_BUFFER_SIZE = 1024
 # Create Socket Connection
 client_socket_connection = socket(AF_INET, SOCK_DGRAM)
 
+# Set Sock option BROADCAST = 1
+client_socket_connection.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
+
 try:
     # Send Data to Server...
     client_msg = "Hi, Server... :)".encode()
