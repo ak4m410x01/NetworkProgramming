@@ -1,41 +1,36 @@
-import socket
+from socket import *
 
+SERVER_ADDR = ("<broadcast>", 55555)
 MAX_BUFFER_SIZE = 1024
-SERVER_ADDR = ("0.0.0.0", 55555)
 
+# Create Socket Connection
+server_socket_connection = socket(AF_INET, SOCK_DGRAM)
 
-def server_socket_udp(server_addr: tuple) -> None:
-    # Create Socket Connection
-    server_connection_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# Bind Socket with server address
+server_socket_connection.bind(SERVER_ADDR)
 
-    # Set Sock Option SO_BROADCAST = 1
-    server_connection_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+while True:
+    try:
+        print("=====================================")
+        print("Waiting Client(s)...!!\n")
 
-    # Bind Socket with server_addr
-    server_connection_socket.bind(server_addr)
+        # Recv Data From Client(s)...
+        client_msg, client_addr = server_socket_connection.recvfrom(MAX_BUFFER_SIZE)
 
-    while True:
-        try:
-            print("=====================================")
-            print("Waiting Client(s)...!!\n")
+        print(f"Received From `{client_addr}`: Message => `{client_msg.decode()}`")
 
-            # Recv Data from client(s)...
-            client_msg, client_addr = server_connection_socket.recvfrom(MAX_BUFFER_SIZE)
+        # Send Data to Client(s)...
+        server_msg = "Hi, Client... :)".encode()
+        server_socket_connection.sendto(server_msg, client_addr)
 
-            print(f"{client_addr} => {client_msg.decode('ASCII')}")
+        print(f"Send To `{client_addr}`: Message `{server_msg.decode()}`")
 
-            # Send Data to Client(s)
-            server_msg = "Hi, Client\n".encode("ASCII")
-            server_connection_socket.sendto(server_msg, client_addr)
+    except KeyboardInterrupt:
+        print("***************************")
+        print("   Connection Closed :(    ")
+        print("***************************")
 
-            print(f"{server_addr} => {server_msg.decode('ASCII')}")
+        break
 
-        except KeyboardInterrupt:
-            print("***************************")
-            print("   Connection Closed :(    ")
-            print("***************************")
-            break
-
-
-# Call Socket Method
-# server_socket_udp(SERVER_ADDR)
+    except error:
+        print(error)
