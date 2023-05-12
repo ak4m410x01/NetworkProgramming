@@ -1,28 +1,30 @@
-import socket
+from socket import *
 
 MAX_BUFFER_SIZE = 1024
 SERVER_ADDR = ("127.0.0.1", 55555)
 
+# Create Socket Connection
+client_socket_connection = socket(AF_INET, SOCK_STREAM)
 
-def client_socket_tcp(server_addr: tuple):
-    # Create Socket Connection
-    client_connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+try:
+    # Connect with Server
+    client_socket_connection.connect(SERVER_ADDR)
 
-    # Connect with server
-    client_connection_socket.connect(server_addr)
+    # Send Data To Server
+    client_msg = "Hi, Server".encode()
+    client_socket_connection.sendall(client_msg)
 
-    # Send Data
-    client_msg = "Hi, Server".encode("ASCII")
-    client_connection_socket.sendall(client_msg)
+    print(f"Send To `{SERVER_ADDR}: Message => {client_msg.decode()}`")
 
-    # Recv Data
-    server_msg = client_connection_socket.recv(MAX_BUFFER_SIZE)
+    # Recv Data From Server
+    server_msg = client_socket_connection.recv(MAX_BUFFER_SIZE)
 
-    print(f"{server_addr} => {server_msg}")
+    print(f"Received From `{SERVER_ADDR}: Message => {server_msg.decode()}`")
 
     # Close
-    client_connection_socket.close()
+    client_socket_connection.close()
 
+except error:
+    client_socket_connection.close()
 
-# Call Socket Method
-# client_socket_tcp(SERVER_ADDR)
+    print(error)
