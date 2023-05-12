@@ -1,98 +1,91 @@
-import socket
-import threading
+from socket import *
+from threading import *
 
-MAX_CONNECTION = 5
 MAX_BUFFER_SIZE = 1024
+SERVER_MAX_CONNECTION = 5
+SERVER_ADDR = ("127.0.0.1", 55555)
+
 clients_db = []
+names_db = []
 
 
-def connection_close() -> None:
-    print("***************************")
-    print("   Connection Closed :(    ")
-    print("***************************")
-
-
-def broadcast(_msg: str) -> None:
+def broadcast(msg) -> None:
+    # Broadcast Message for all Users
     for client in clients_db:
-        print(_msg)
-        client["connection"].sendall(_msg.encode("ASCII"))
+        client.sendall(msg.encode("ASCII"))
+        print(msg)
 
     return
 
 
-def receive() -> None:
+def receive(connection) -> None:
     while True:
         try:
-            # Recv Messages and Broadcast
-            _client_msg = f"{_client_name}: {_client_connection_socket.recv(MAX_BUFFER_SIZE)}".decode(
-                "ASCII"
-            )
-            broadcast(_client_msg)
+            # Recv Message From Client then Broadcast this message to all Clients
+            client_msg = connection.recv(MAX_BUFFER_SIZE).decode("ASCII")
+            broadcast(f"{client_name}=> {client_msg}")
 
-        except:
-            broadcast(f" ):  /{_client_name}\\ left chat room  :( ")
+        except error:
+            print(error)
 
-            clients_db.remove(
-                {
-                    "name": _client_name,
-                    "connection": _client_connection_socket,
-                },
-            )
+            connection.close()
 
-            _client_connection_socket.close()
+            idx = clients_db.remove(connection)
+            broadcast(f" ):  /{names_db[idx]}\\ Left from chat room  :( ")
+
+            # Remove Client From DB
+            clients_db.pop(idx)
+            names_db.pop(idx)
 
             break
 
-    return
 
+# Create Socket Connection
+server_socket_connection = socket(AF_INET, SOCK_STREAM)
 
-server_ip = socket.gethostbyname(socket.gethostname())
-server_port = 55555
+# Set Sock REUSEADDR option = 1
+server_socket_connection.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
-# Create TCP Socket Connection
-_server_connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# Bind Socket with Server Address
+server_socket_connection.bind(SERVER_ADDR)
 
-# Set socket opt REUSEADDR = 1
-_server_connection_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+# Listing...
+server_socket_connection.listen(SERVER_MAX_CONNECTION)
 
-# Bind socket with server addr
-_server_addr = (server_ip, server_port)
-_server_connection_socket.bind(_server_addr)
+print(f"Listing at: `{SERVER_ADDR}`... :)")
 
-# Listen...
-_server_connection_socket.listen(MAX_CONNECTION)
-
-print(f"Listing at:{_server_addr}")
 
 while True:
     try:
-        print("=====================================")
+        # Accept Socket Connection
+        client_socket_connection, client_addr = server_socket_connection.accept()
 
-        # Accept Client(s) connection...
-        _client_connection_socket, _client_addr = _server_connection_socket.accept()
+        # Request Client Name
+        client_socket_connection.sendall("name".encode("ASCII"))
+        client_name = client_socket_connection.recv(MAX_BUFFER_SIZE).decode("ASCII")
 
-        # Request Client Name:
-        _client_connection_socket.send("Name:".encode("ASCII"))
-        _client_name = _client_connection_socket.recv(MAX_BUFFER_SIZE).decode("ASCII")
+        # add client name & client connection to db
+        clients_db.append(client_socket_connection)
+        names_db.append(client_name)
 
-        # Add Client [Name, Connection] to DB
-        clients_db.append(
-            {
-                "name": _client_name,
-                "connection": _client_connection_socket,
+        # Broadcast "Join Message"
+        broadcast(f" (:  /{client_name}\\ joined to chat room  :)")
+
+        # Create Receive Thread and start it
+        receive_thread = Thread(
+            target=receive,
+            args={
+                client_socket_connection,
             },
         )
 
-        # join message broadcast...
-        broadcast(f" (:  /{_client_name}\\ joined to chat room  :)")
-
-        # recv func thread...
-        receive_thread = threading.Thread(target=receive)
         receive_thread.start()
 
     except KeyboardInterrupt:
-        connection_close()
+        print("***************************")
+        print("   Connection Closed :(    ")
+        print("***************************")
 
-        _server_connection_socket.close()
+        client_socket_connection.close()
 
         break

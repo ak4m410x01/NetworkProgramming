@@ -1,67 +1,48 @@
-import socket
-import threading
+from socket import *
+from threading import *
 
 MAX_BUFFER_SIZE = 1024
-
+SERVER_ADDR = ("127.0.0.1", 55555)
 CLIENT_NAME = input("Name:")
 
+# Create Socket Connection
+client_socket_connection = socket(AF_INET, SOCK_STREAM)
 
-def connection_close() -> None:
-    print("*****************************************")
-    print(f" {CLIENT_NAME}  Connection Closed :(    ")
-    print("*****************************************")
+# Connect with Server Addr
+client_socket_connection.connect(SERVER_ADDR)
 
 
-def recv_message() -> None:
+def recive() -> None:
     while True:
         try:
-            _server_msg = _client_connection_socket.recv(MAX_BUFFER_SIZE).decode(
-                "ASCII"
-            )
+            # Recv Message from Server
+            client_msg = client_socket_connection.recv(MAX_BUFFER_SIZE).decode("ASCII")
 
-            if _server_msg == "Name:":
-                _client_connection_socket.sendall(CLIENT_NAME.encode("ASCII"))
+            if client_msg == "name":
+                # Send Name to server
+                client_socket_connection.sendall(CLIENT_NAME.encode("ASCII"))
+
             else:
-                print(_server_msg)
+                print(client_msg)
 
-        except:
-            print("Client recv message error... :(")
+        except error:
+            print(error)
 
-            connection_close()
-
-            _client_connection_socket.close()
+            client_socket_connection.close()
             break
 
 
-def send_message() -> None:
+def send() -> None:
     while True:
         try:
-            _client_msg = input().encode("ASCII")
+            # Read & Send Data to Server
+            client_msg = input()
+            client_socket_connection.sendall(client_msg.encode("ASCII"))
 
-            _client_connection_socket.sendall(_client_msg)
-        except:
-            print("Client send message error... :(")
-
-            connection_close()
-
-            _client_connection_socket.close()
-            break
+        except error:
+            print(error)
 
 
-server_ip = socket.gethostbyname(socket.gethostname())
-server_port = 55555
+receive_thread = Thread(target=recive).start()
 
-# Create TCP Socket Connection
-_client_connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Connect with Server
-_server_addr = (server_ip, server_port)
-_client_connection_socket.connect(_server_addr)
-
-# Recv thread...
-recv_thread = threading.Thread(target=recv_message)
-recv_thread.start()
-
-# Send thread...
-send_thread = threading.Thread(target=send_message)
-send_thread.start()
+send_thread = Thread(target=send).start()

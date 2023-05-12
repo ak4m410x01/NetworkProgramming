@@ -33,14 +33,13 @@ def recive() -> None:
 
 
 def send() -> None:
-    while True:
-        try:
-            # Read & Send Data to Server
-            client_msg = input()
-            client_socket_connection.sendall(client_msg.encode("ASCII"))
+    try:
+        # Read & Send Data to Server
+        client_msg = input()
+        client_socket_connection.sendall(client_msg.encode("ASCII"))
 
-        except error:
-            print(error)
+    except error:
+        print(error)
 
 
 receive_thread = Thread(target=recive).start()
