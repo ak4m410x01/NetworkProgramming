@@ -31,5 +31,6 @@ mails_records = lookup(domain, rqtype)
 
 mails_ip = lookup_mails(mails_records)
 
-for mail in mails_ip:
-    print(f"{mail['domain']}:{mail['ip']}")
+if not mails_ip == None:
+    for mail in mails_ip:
+        print(f"{mail['domain']}:{mail['ip']}")
