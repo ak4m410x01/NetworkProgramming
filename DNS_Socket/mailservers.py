@@ -1,33 +1,35 @@
-import dns.resolver
+from dns.resolver import *
 
 
-def lookup(_domain: str, _rqtype: str) -> None:
-    return dns.resolver.query(_domain, _rqtype, raise_on_no_answer=False)
+def lookup(host: str, rqtype: str) -> query:
+    return query(host, rqtype, raise_on_no_answer=False)
 
 
-def lookup_mail(_mail_records):
-    if _mail_records.rrset == None:
+def lookup_mails(mails_records: query):
+    if mails_records.rrset == None:
         return
 
-    _mail_ips = []
+    mails_records = sorted(mails_records)
 
-    _mail_records = sorted(_mail_records)
+    mails_ip = []
 
-    for record in _mail_records:
-        mail_name = record.exchange.to_text(omit_final_dot=True)
-        mail_name_lookup = lookup(mail_name, "a")
-        for ip in mail_name_lookup:
-            _mail_ips.append({"domain": mail_name, "ip": ip})
+    for mail in mails_records:
+        mail_domain = mail.exchange.to_text(omit_final_dot=True)
 
-    return _mail_ips
+        mail_ips = lookup(mail_domain, "a").rrset
+
+        for ip in mail_ips:
+            mails_ip.append({"domain": mail_domain, "ip": ip})
+
+    return mails_ip
 
 
 domain = "google.com"
 rqtype = "mx"
 
-mail_records = lookup(domain, rqtype)
+mails_records = lookup(domain, rqtype)
 
-mail_ips = lookup_mail(mail_records)
+mails_ip = lookup_mails(mails_records)
 
-for record in mail_ips:
-    print(f"{record['domain']}:{record['ip']}")
+for mail in mails_ip:
+    print(f"{mail['domain']}:{mail['ip']}")
