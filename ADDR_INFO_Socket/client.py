@@ -1,38 +1,41 @@
-import socket
+from socket import *
+
+MAX_BUFFER_SIZE = 1024
 
 
-MAX_BUFFER_SIZE = 1023
-
-
-# Get Info
-_client_connection = socket.getaddrinfo(
+# Get Server addr info
+server_info = getaddrinfo(
     None,
     55555,
-    socket.AF_INET,
-    socket.SOCK_STREAM,
+    AF_INET,
+    SOCK_STREAM,
 )
 
-# Create Socket Connection
-_client_connection_socket = socket.socket(*_client_connection[0][0:3])
-
 try:
+    # Create Socket Connection
+    client_socket_connection = socket(*server_info[0][0:3])
+
     # Connect with server
-    _server_addr = _client_connection[0][4]
+    client_socket_connection.connect(server_info[0][4])
 
-    _client_connection_socket.connect(_server_addr)
+    # Send Data To Server...
+    client_msg = "Hi, Server".encode()
+    client_socket_connection.sendall(client_msg)
 
-    # Send Data...
-    _client_msg = "Hi, Server".encode("ASCII")
+    print(f"Send To `{server_info[0][4]}: Message => {client_msg.decode()}`")
 
-    _client_connection_socket.sendall(_client_msg)
+    # Recv Data From Server...
+    server_msg = client_socket_connection.recv(MAX_BUFFER_SIZE)
 
-    # Recv Data...
-    _server_msg = _client_connection_socket.recv(MAX_BUFFER_SIZE).decode("ASCII")
+    print(f"Received From `{server_info[0][4]}: Message => {server_msg.decode()}`")
 
-    print(f"{_server_addr}=> {_server_msg}")
+    # Close Connection
+    client_socket_connection.close()
+
 except KeyboardInterrupt:
     print("***************************")
     print("   Connection Closed :(    ")
     print("***************************")
 
-_client_connection_socket.close()
+except error:
+    print(error)
