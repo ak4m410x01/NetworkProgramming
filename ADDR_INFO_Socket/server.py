@@ -1,55 +1,56 @@
-import socket
+from socket import *
 
-MAX_CONNECTION = 5
+SERVER_MAX_CONNECTION = 5
+MAX_BUFFER_SIZE = 1024
 
-MAX_BUFFER_SIZE = 1023
 
-
-# Get Info
-_server_connection = socket.getaddrinfo(
+# Get Server addr info
+server_info = getaddrinfo(
     None,
     55555,
-    socket.AF_INET,
-    socket.SOCK_STREAM,
+    AF_INET,
+    SOCK_STREAM,
 )
 
-
 # Create Socket Connection
-_server_connection_socket = socket.socket(*_server_connection[0][0:3])
+server_socket_connection = socket(*server_info[0][0:3])
 
-# Bind socket with server addr
-_server_addr = _server_connection[0][4]
-
-_server_connection_socket.bind(_server_addr)
+# Bind Socket with server addr
+server_socket_connection.bind(server_info[0][4])
 
 # Listing...
-_server_connection_socket.listen(MAX_CONNECTION)
+server_socket_connection.listen(SERVER_MAX_CONNECTION)
 
-print(f"Listing at:{_server_addr}...")
+print(f"Listing at: `{server_info[0][4]}`")
 
 while True:
     try:
         print("=====================================")
-        print("\n Waiting...!!")
+        print("Waiting Client(s)...!!\n")
 
-        # Accept Connection
-        _client_connection_socket, _client_addr = _server_connection_socket.accept()
+        # Accept Connection(s)...
+        client_socket_connection, client_addr = server_socket_connection.accept()
 
-        # Recv Data...
-        _client_msg = _client_connection_socket.recv(MAX_BUFFER_SIZE).decode("ASCII")
+        # Recv Data From Client...
+        client_msg = client_socket_connection.recv(MAX_BUFFER_SIZE)
 
-        print(f"{_client_addr}=> {_client_msg}")
+        print(f"Received From `{client_addr}: Message => {client_msg.decode()}`")
 
-        # Send Data...
-        _server_msg = "Hi, Client".encode("ASCII")
+        # Send Data To Client...
+        server_msg = "Hi, Client".encode()
+        client_socket_connection.sendall(server_msg)
 
-        _client_connection_socket.sendall(_server_msg)
+        print(f"Send To `{client_addr}: Message => {server_msg.decode()}`")
 
         # Close Connection
-        _client_connection_socket.close()
+        client_socket_connection.close()
+
     except KeyboardInterrupt:
         print("***************************")
         print("   Connection Closed :(    ")
         print("***************************")
-        _server_connection_socket.close()
+
         break
+
+    except error:
+        print(error)
